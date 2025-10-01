@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/auth_db
+    url: jdbc:postgresql://localhost:5432/auth_db
     username: postgres
     password: Ankit@123
   jpa:
@@ -11,5 +11,5 @@ spring:
     bootstrap-servers: localhost:9092
 
 server:
-  port: 8080
+  port: 8081
 
