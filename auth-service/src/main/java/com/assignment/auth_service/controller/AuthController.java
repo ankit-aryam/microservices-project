@@ -1,5 +1,7 @@
 package com.assignment.auth_service.controller;
 
+import com.assignment.auth_service.dto.LoginRequest;
+import com.assignment.auth_service.dto.LoginResponse;
 import com.assignment.auth_service.dto.RegisterRequest;
 import com.assignment.auth_service.dto.RegisterResponse;
 import com.assignment.auth_service.service.AuthService;
@@ -22,5 +24,11 @@ public class AuthController {
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request) {
         RegisterResponse response = authService.register(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
 }
