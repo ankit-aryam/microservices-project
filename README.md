@@ -1,146 +1,137 @@
-Spring Boot Microservices with Kafka
-Project Overview
+# E-Commerce Microservices Project
 
-This project demonstrates an event-driven microservices architecture using Spring Boot, PostgreSQL, and Apache Kafka. It consists of two independent services:
+This is a **Dockerized E-Commerce microservices project** built with **Java Spring Boot**, **PostgreSQL**, and **Kafka**. The project demonstrates a role-based authentication system, event-driven architecture using Kafka, and inter-service communication between **Auth Service** and **Order Service**.
 
-Auth Service – Manages user registration, login, JWT authentication, and maintains user history.
+---
 
-Order Service – Manages order creation, validates user login status, and emits order events.
+## **Services Overview**
 
-Both services communicate asynchronously through Kafka events, showing bidirectional integration.
+1. **Auth Service**
+    - Handles user registration and login.
+    - Generates JWT tokens for authentication.
+    - Publishes user login events to Kafka (`user-events` topic).
 
-Features / Milestones
-1. Auth Service
+2. **Order Service**
+    - Listens to Kafka `user-events` topic for user login events.
+    - Stores user session details in PostgreSQL.
+    - Processes orders (basic structure implemented).
 
-User Registration (POST /auth/register)
+3. **Kafka & Zookeeper**
+    - Kafka is used for messaging between services.
+    - Zookeeper manages Kafka broker.
 
-Stores users with encrypted passwords (BCrypt).
+4. **Databases**
+    - PostgreSQL is used for persistence for both Auth and Order services.
 
-User Login (POST /auth/login)
+5. **Kafdrop**
+    - Kafka web UI to monitor topics, consumers, and messages.
+    - Accessible on port `9000`.
 
-Validates credentials and generates JWT token.
+---
 
-Publishes USER_LOGGED_IN Kafka event.
+## **Prerequisites**
 
-Sample Event:
+- Docker & Docker Compose installed
+- Java 17
+- Maven (optional if building Docker images inside containers)
 
-{
-"event": "USER_LOGGED_IN",
-"data": { "userId": "1", "email": "test@example.com" }
-}
+---
+
+## **Setup Instructions**
+
+1. Clone the repository:
+   ```bash
+   git clone <repo-url>
+   cd project
+
+2. Start all services using Docker Compose:
+   ```bash
+   docker-compose up -d --build
+
+3. Verify containers are running:
+   ```bash
+   docker ps
+4. Access Kafdrop to monitor Kafka:
+    ```bash
+   http://localhost:9000
+Environment Variables (Docker)
+
+Defined in docker-compose.yml:
+
+Service	Env Variable	Description
+auth-service	SPRING_DATASOURCE_URL	PostgreSQL connection URL
+auth-service	SPRING_DATASOURCE_USERNAME	DB username
+auth-service	SPRING_DATASOURCE_PASSWORD	DB password
+auth-service	SPRING_KAFKA_BOOTSTRAP_SERVERS	Kafka bootstrap server for producer/consumer
+order-service	SPRING_DATASOURCE_URL	PostgreSQL connection URL
+order-service	SPRING_DATASOURCE_USERNAME	DB username
+order-service	SPRING_DATASOURCE_PASSWORD	DB password
+order-service	SPRING_KAFKA_BOOTSTRAP_SERVERS	Kafka bootstrap server for producer/consumer
+Project Endpoints
+Auth Service (8081)
+Endpoint	Method	Description
+/auth/register	POST	Register new user
+/auth/login	POST	Login user and generate JWT
+Order Service (8082)
+Endpoint	Method	Description
+/orders	POST/GET	Manage orders (basic)
+Kafka Topics
+
+user-events → Auth service publishes user login events, Order service consumes and stores session data.
+
+Important Notes
+
+Bootstrap Servers
+
+For Docker containers, always use internal Docker hostname: kafka:29092.
+
+localhost:9092 works only on host machine.
+
+Docker Networking
+
+Each service connects via Docker network using service name as hostname.
+
+Avoid localhost inside containers for inter-service Kafka communication.
+
+Building & Running
+
+docker-compose down
+docker-compose up -d --build
 
 
-Consumes ORDER_CREATED events from Order Service to maintain user order history.
+Kafka Debugging
 
-2. Order Service
+Check Kafdrop UI (localhost:9000) for messages.
 
-Place Order (POST /orders)
+Ensure consumer group ID matches in consumer configuration.
 
-Accepts userId, amount, productName.
+Logs & Troubleshooting
 
-Checks if the user has logged in via USER_LOGGED_IN event.
+Auth Service produces messages:
 
-Returns 401 Unauthorized if not logged in.
-
-Saves orders in PostgreSQL.
-
-Publishes ORDER_CREATED Kafka event after order creation.
-
-Sample Event:
-
-{
-"event": "ORDER_CREATED",
-"data": { "orderId": "1001", "userId": "1", "amount": 500 }
-}
+=== KAFKA MESSAGE SENT ===
 
 
-Consumes USER_LOGGED_IN events to track logged-in users.
+Order Service consumes messages:
 
-3. Kafka Integration
+=== KAFKA MESSAGE RECEIVED ===
+USER_LOGGED_IN consumed and saved for userId: <id>
 
-Auth Service → produces USER_LOGGED_IN.
 
-Order Service → consumes USER_LOGGED_IN.
+Common issues:
 
-Order Service → produces ORDER_CREATED.
+Messages not received → Check bootstrap server & advertised listeners in Kafka.
 
-Auth Service → consumes ORDER_CREATED.
+Docker containers cannot reach Kafka → Use internal service hostname (kafka:29092).
 
-This demonstrates bidirectional event-driven communication.
+Tech Stack
 
-4. Security
+Java 17 + Spring Boot
 
-JWT-based authentication and authorization.
+PostgreSQL 15
 
-Auth Service endpoints secured with Spring Security.
-
-Order creation allowed only for logged-in users.
-
-5. Docker Setup
-
-Docker Compose is used for local development:
-
-PostgreSQL databases for both services.
-
-Kafka broker + Zookeeper.
-
-Kafdrop for Kafka UI (debugging events).
-
-Start all services:
-
-docker-compose up
-
-6. Technology Stack
-
-Java 17 / Spring Boot 3.x
-
-Spring Data JPA
-
-PostgreSQL
-
-Apache Kafka
-
-Spring Security (JWT)
+Kafka 7.5.0 + Zookeeper
 
 Docker & Docker Compose
 
-Maven
-
-7. End-to-End Flow
-
-Register a user in Auth Service.
-
-Login → USER_LOGGED_IN event is published.
-
-Place an order via Order Service.
-
-Order Service validates login via consumed event.
-
-ORDER_CREATED event is published.
-
-Auth Service consumes ORDER_CREATED → updates user order history.
-
-Databases confirm persisted users and orders.
-
-8. How to Run
-
-Clone the repo.
-
-Start Docker services:
-
-docker-compose up
-
-
-Start Auth Service (port 8081).
-
-Start Order Service (port 8082).
-
-Test endpoints using Postman or any API client.
-
-9. Notes
-
-Kafka events are JSON serialized.
-
-Retry mechanism added for Kafka consumers.
-
-No SQL queries are written manually; Spring Data JPA handles persistence.
+Kafdrop (Kafka UI)
