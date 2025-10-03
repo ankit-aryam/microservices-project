@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/auth_db
+    url: jdbc:postgresql://auth-db:5432/auth_db
     username: postgres
     password: Ankit@123
   jpa:
@@ -8,7 +8,7 @@ spring:
       ddl-auto: update
     show-sql: true
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:29092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
